@@ -7,6 +7,11 @@ import commands from '../commands/_commands';
 const onReady = async (bot: Client) => {
   console.log('🤖 Running bot...');
 
+  bot.user?.setActivity({
+    type: 'LISTENING',
+    name: '/help',
+  });
+
   const botId = bot.user?.id || 'missing id';
   const guildId = process.env.GUILD_ID!;
 
