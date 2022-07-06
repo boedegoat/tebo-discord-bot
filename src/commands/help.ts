@@ -9,9 +9,9 @@ const help: Command = {
     .setDescription('Provides guides for using this bot'),
   run: async (interaction) => {
     const embed = new MessageEmbed();
-    embed.setTitle('Learn Discord JS Bot Guides');
+    embed.setTitle(`Guides (${commands.length} commands)`);
     embed.addFields(commands.map((command) => ({
-      name: command.data.name,
+      name: `/${command.data.name}`,
       value: command.data.description,
     })));
     interaction.editReply({ embeds: [embed] });

@@ -1,12 +1,13 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import Command from '../interfaces/Command';
 import createEmbed from '../lib/createEmbed';
+import getGuildMember from '../lib/getGuildMember';
 
 const santet: Command = {
   ephemeral: true,
   data: new SlashCommandBuilder()
     .setName('santet')
-    .setDescription('This one is little bit sacred. Use it wisely 🦉')
+    .setDescription('This one is a little bit sacred. Use it wisely 😈')
     .addUserOption((option) => option
       .setName('target-user')
       .setDescription('Who do you want to santet ?')
@@ -14,17 +15,13 @@ const santet: Command = {
     .addNumberOption((option) => option
       .setName('loop')
       .setDescription('How many times you want to santet him/her ?')
-      .setMinValue(5)),
+      .setMinValue(5))
+    .setDMPermission(false),
 
   run: async (interaction) => {
-    const { options, channel, guild } = interaction;
+    const { options, guild } = interaction;
     const targetUser = options.getUser('target-user', true);
     const loop = options.getNumber('loop') ?? 20;
-
-    // check if this command is executed outside discord server
-    if (!channel || !guild) {
-      throw 'You can only run this command inside discord server';
-    }
 
     if (targetUser.bot) {
       throw "You can't santet a bot";
@@ -36,7 +33,10 @@ const santet: Command = {
     }
 
     // get member instance of targeted user to access his/her roles
-    const targetMember = await guild.members.fetch({ user: targetUser });
+    const targetMember = await getGuildMember({
+      guild,
+      user: targetUser,
+    });
     const targetMemberRoles = targetMember.roles.cache;
 
     if (targetMemberRoles.size === 1) {
