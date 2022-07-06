@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { MessageEmbed } from 'discord.js';
 import Command from '../interfaces/Command';
+import createEmbed from '../lib/createEmbed';
 import commands from './_commands';
 
 const help: Command = {
@@ -8,7 +8,7 @@ const help: Command = {
     .setName('help')
     .setDescription('Provides guides for using this bot'),
   run: async (interaction) => {
-    const embed = new MessageEmbed();
+    const embed = createEmbed();
     embed.setTitle(`Guides (${commands.length} commands)`);
     embed.addFields(commands.map((command) => ({
       name: `/${command.data.name}`,
