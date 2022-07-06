@@ -1,12 +1,12 @@
-import { Guild, User } from 'discord.js';
+import { Guild } from 'discord.js';
 
 interface Props {
     guild: Guild | null
-    user: User
+    userId: string
 }
 
-const getGuildMember = async ({ guild, user }: Props) => {
-  const member = await guild?.members.fetch({ user });
+const getGuildMember = ({ guild, userId }: Props) => {
+  const member = guild?.members.cache.get(userId);
 
   if (!member) {
     throw 'User not found for unknown reason';

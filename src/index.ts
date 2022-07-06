@@ -7,7 +7,7 @@ import onReady from './events/onReady';
 
 // eslint-disable-next-line import/prefer-default-export
 export const bot = new Client({
-  intents: ['GUILDS'], // tell Discord what events your bot should receive.
+  intents: ['GUILDS', 'GUILD_VOICE_STATES'], // tell Discord what events your bot should receive.
 });
 
 bot.on('ready', onReady);
