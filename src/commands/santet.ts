@@ -37,7 +37,7 @@ const runSantet = async ({
   const targetMemberRoles = targetMember.roles.cache;
 
   if (targetMemberRoles.size === 1) {
-    throw 'Please add at least one role to the user you targeted';
+    throw `Please add at least one role to ${targetMember.user.toString()}`;
   }
 
   const targetMemberRolesArray = [...targetMemberRoles].map(([, roleData]) => roleData);
