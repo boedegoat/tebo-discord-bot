@@ -7,7 +7,8 @@
     "dev": "nodemon -r dotenv/config ./src/index.ts",
     "build": "npm run lint && tsc",
     "lint": "eslint ./src/**/*.{js,ts}",
-    "start": "node -r dotenv/config ./dist/index.js -p $PORT"
+    "start": "node -r dotenv/config ./dist/index.js",
+    "start-webserver": "node -r dotenv/config ./dist/server.js -p $PORT"
   },
   "keywords": [],
   "author": "",
