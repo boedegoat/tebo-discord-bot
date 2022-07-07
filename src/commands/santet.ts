@@ -1,92 +1,89 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import {
-  Collection, CommandInteraction, GuildMember, User,
+  Collection, CommandInteraction, GuildMember,
 } from 'discord.js';
 import Command from '../interfaces/Command';
 import createEmbed from '../lib/createEmbed';
-import errorHandler from '../lib/errorHandler';
 import getGuildChannel from '../lib/getGuildChannel';
 import getGuildMember from '../lib/getGuildMember';
 import { bot } from '..';
 
-let continueSantet = false;
-let targetUser: User | null = null;
-let senderUser: User | null = null;
-
-const resetSantet = () => {
-  continueSantet = false;
-  targetUser = null;
-  senderUser = null;
-};
-
+type SantetQueue = {
+    targetMember: GuildMember
+    senderMember: GuildMember
+}[]
 interface RunSantetProps {
     interaction: CommandInteraction
     loop: number
-    targetMember?: GuildMember
+    targetMember: GuildMember
+    senderMember: GuildMember
 }
+interface ResetSantetProps { userId: string }
 
-const runSantet = async ({ interaction, loop, targetMember: targetMemberArg }: RunSantetProps) => {
-  const embed = createEmbed();
+let santetQueue: SantetQueue = [];
 
-  try {
-    const { guild } = interaction;
+const resetSantet = ({ userId }: ResetSantetProps) => {
+  santetQueue = santetQueue.filter(({ targetMember }) => targetMember.user.id !== userId);
+};
 
-    // get member instance of targeted user to access his/her roles
-    let targetMember = targetMemberArg;
-    if (!targetMember) {
-      targetMember = getGuildMember({
-        guild,
-        userId: targetUser!.id,
-      });
-    }
-    const targetMemberRoles = targetMember.roles.cache;
-
-    if (targetMemberRoles.size === 1) {
-      throw 'Please add at least one role to the user you targeted';
-    }
-
-    const targetMemberRolesArray = [...targetMemberRoles].map(([, roleData]) => roleData);
-
-    const [roleToAddBack, everyoneRole] = targetMemberRolesArray.slice(
-      targetMemberRolesArray.length - 2,
-    );
-
-    // check if @everyone role has 'Use Voice Activity' permission, tell them to disable it
-    if (everyoneRole.permissions.has('USE_VAD')) {
-      throw "Please disable 'Use Voice Activity' permission on @everyone role in order to make this command works";
-    }
-
-    // check if bot has 'Manage Role' permission
-    const botMember = getGuildMember({ guild: interaction.guild, userId: bot.user?.id });
-    if (!botMember.permissions.has('MANAGE_ROLES')) {
-      throw "Please make sure I have 'Manage Role' permission";
-    }
-
-    // check if target user role is higher than bot
-    if (botMember.roles.highest.position <= targetMember.roles.highest.position) {
-      throw `Can't santet ${targetUser?.toString()} because his/her role is equal or higher than me`;
-    }
-
-    embed.setColor('RED');
-    embed.setDescription(`Santeting ${targetUser!.toString()} ${loop} times...`);
-    await interaction.editReply({ embeds: [embed] });
-
-    // execute santet loop
-    continueSantet = true;
-    for (let times = 1; times <= Math.round(loop / 2); times += 1) {
-      if (!continueSantet) break;
-      await targetMember.roles.remove(targetMemberRoles);
-      await targetMember.roles.add(roleToAddBack);
-    }
-
-    embed.setColor('GREEN');
-    embed.setDescription(`Santet ${targetUser!.toString()} ${loop} times done`);
-    interaction.editReply({ embeds: [embed] });
-  } catch (err: any) {
-    errorHandler({ err, interaction });
-  } finally {
-    resetSantet();
+const runSantet = async ({
+  interaction, loop, targetMember, senderMember,
+}: RunSantetProps) => {
+  // check if targetMember user id is in santetQueue
+  if (santetQueue.find((data) => data.targetMember.user.id === targetMember.user.id)) {
+    throw 'You can\'t perform santet on a user who is being santet';
   }
+
+  const targetMemberRoles = targetMember.roles.cache;
+
+  if (targetMemberRoles.size === 1) {
+    throw 'Please add at least one role to the user you targeted';
+  }
+
+  const targetMemberRolesArray = [...targetMemberRoles].map(([, roleData]) => roleData);
+
+  const [roleToAddBack, everyoneRole] = targetMemberRolesArray.slice(
+    targetMemberRolesArray.length - 2,
+  );
+
+  // check if @everyone role has 'Use Voice Activity' permission, tell them to disable it
+  if (everyoneRole.permissions.has('USE_VAD')) {
+    throw `Please disable 'Use Voice Activity' permission on ${everyoneRole.toString()} role in order to make this command works as expected`;
+  }
+
+  //  check if role to add back doesn't has 'Use Voice Activity' permisson, tell them to enable it
+  if (!roleToAddBack.permissions.has('USE_VAD')) {
+    throw `Please enable 'Use Voice Activity' permission on ${roleToAddBack.toString()} role in order to make this command works as expected`;
+  }
+
+  // check if bot has 'Manage Role' permission
+  const botMember = getGuildMember({ guild: interaction.guild, userId: bot.user?.id });
+  if (!botMember.permissions.has('MANAGE_ROLES')) {
+    throw "Please make sure I have 'Manage Role' permission";
+  }
+
+  // check if target user role is higher than bot
+  if (botMember.roles.highest.position <= targetMember.roles.highest.position) {
+    throw `Can't santet ${targetMember.user.toString()} because his/her role is equal or higher than me`;
+  }
+
+  const embed = createEmbed();
+  embed.setColor('RED');
+  embed.setDescription(`Santeting ${targetMember.user.toString()} ${loop} times...`);
+  await interaction.editReply({ embeds: [embed] });
+
+  // execute santet loop
+  santetQueue.push({ targetMember, senderMember });
+  for (let times = 1; times <= Math.round(loop / 2); times += 1) {
+    if (!santetQueue.find((data) => data.targetMember === targetMember)) break;
+    await targetMember.roles.remove(targetMemberRoles);
+    await targetMember.roles.add(roleToAddBack);
+  }
+  resetSantet({ userId: targetMember.user.id });
+
+  embed.setColor('GREEN');
+  embed.setDescription(`Santet ${targetMember.user.toString()} ${loop} times done`);
+  interaction.editReply({ embeds: [embed] });
 };
 
 const santet: Command = {
@@ -101,38 +98,43 @@ const santet: Command = {
       .setName('loop')
       .setDescription('How many times you want to santet him/her ?')
       .setMinValue(5))
-    .addBooleanOption((option) => option
-      .setName('stop')
-      .setDescription('Stop current ongoing santet (select True to continue)')),
+    .addUserOption((option) => option
+      .setName('stop-user')
+      .setDescription('Stop current ongoing santet by user')),
 
   run: async (interaction) => {
     const { options, guild } = interaction;
 
-    const stop = options.getBoolean('stop');
-    if (stop) {
-      if (!targetUser) {
-        throw 'There is no user who is being santet';
-      }
-      if (senderUser !== interaction.user) {
-        throw 'Only penyantet who can only stop the current santet';
+    const senderUser = interaction.user;
+
+    const stopUser = options.getUser('stop-user');
+
+    // handle santet stop
+    if (stopUser) {
+      const santetData = santetQueue.find(
+        ({ targetMember }) => targetMember.user.id === stopUser.id,
+      );
+
+      if (!santetData) {
+        throw `${stopUser.toString()} is not being santet`;
       }
 
-      resetSantet();
+      if (senderUser.id !== santetData.senderMember.user.id) {
+        throw 'Stopping current ongoing santet can only be performed by penyantet.';
+      }
+
+      const { targetMember } = santetData;
+      resetSantet({ userId: targetMember.user.id });
 
       const embed = createEmbed();
-      embed.setDescription(`Santet ${targetUser.toString()} stopped`);
+      embed.setDescription(`Santet ${targetMember.user.toString()} stopped`);
       await interaction.editReply({ embeds: [embed] });
       return;
     }
 
-    // if targetUser is not empty
-    if (targetUser) {
-      throw 'You can\'t perform santet on a user who is being santet';
-    }
-
-    targetUser = options.getUser('target-user');
-    senderUser = interaction.user;
     const loop = options.getNumber('loop') ?? 20;
+    const targetUser = options.getUser('target-user');
+    const senderMember = getGuildMember({ guild, userId: senderUser.id });
 
     // if sender specify target-user
     if (targetUser) {
@@ -145,16 +147,15 @@ const santet: Command = {
         throw "You can't santet my creator";
       }
 
-      await runSantet({ interaction, loop });
+      const targetMember = getGuildMember({ guild, userId: targetUser.id });
+
+      await runSantet({
+        interaction, loop, targetMember, senderMember,
+      });
       return;
     }
 
     // if target-user is not specified, perform random santet to user inside voice channel
-
-    const senderMember = getGuildMember({
-      guild,
-      userId: senderUser.id,
-    });
 
     const senderCurrentVoiceChannelId = senderMember.voice.channelId;
     if (!senderCurrentVoiceChannelId) {
@@ -170,7 +171,9 @@ const santet: Command = {
 
     const voiceChannelMembersArray = [...voiceChannelMembers]
       .map(([, data]) => data)
-      .filter((member) => !member.user.bot && member.user.id !== process.env.CREATOR_ID);
+      .filter((member) => !member.user.bot
+        && member.user.id !== process.env.CREATOR_ID
+        && !(member.user.id in santetQueue));
 
     if (voiceChannelMembersArray.length === 0) {
       throw 'There is no users who I can santet here\nOr you can use /santet <target-user> instead';
@@ -180,8 +183,9 @@ const santet: Command = {
       Math.floor(Math.random() * voiceChannelMembersArray.length)
     ];
 
-    targetUser = randomMember.user;
-    await runSantet({ interaction, loop, targetMember: randomMember });
+    await runSantet({
+      interaction, loop, targetMember: randomMember, senderMember,
+    });
   },
 };
 
