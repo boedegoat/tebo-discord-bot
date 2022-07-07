@@ -26,6 +26,6 @@ app.listen(port, () => {
 
   // ping server every 5 minutes to prevent app asleep on heroku
   setInterval(() => {
-    http.get(`https://${appName}`);
+    http.get(`http://${appName}`);
   }, 5 * 60 * 1000); // 5 minutes
 });

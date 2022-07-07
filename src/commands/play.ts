@@ -1,25 +1,10 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-// import {
-//   joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus,
-// } from '@discordjs/voice';
-// import path from 'path';
-import music from '@koenie06/discord.js-music';
-import { GuildMember, VoiceChannel } from 'discord.js';
+import { GuildMember } from 'discord.js';
+import { player } from '..';
 import Command from '../interfaces/Command';
 import createEmbed from '../lib/createEmbed';
 
-// @ts-ignore
-const events = music.event;
-
-// @ts-ignore
-events.on('playSong', async (channel, songInfo) => {
-  /* See all the 'songInfo' options by logging it.. */
-
-  channel.send({
-    content: `**🎵 Started playing the song**\n${songInfo.title}\n${songInfo.url}`,
-  });
-});
-
+// TODO: add pause, stop handler
 const play: Command = {
   data: new SlashCommandBuilder()
     .setName('play')
@@ -30,7 +15,7 @@ const play: Command = {
       .setRequired(true)),
 
   run: async (interaction) => {
-    const channel = (interaction.member as GuildMember).voice.channel as VoiceChannel;
+    const { channel } = (interaction.member as GuildMember).voice;
 
     if (!channel) {
       throw 'You must inside a voice channel to play a music';
@@ -43,12 +28,11 @@ const play: Command = {
 
     await interaction.editReply({ embeds: [embed] });
 
-    await music.play({
-      interaction,
-      channel,
-      // @ts-ignore
-      song,
-    });
+    const queue = player.createQueue(interaction.guildId!);
+    await queue.join(channel);
+    const songInfo = await queue.play(song);
+
+    await interaction.followUp(`**🎵 Started playing the song**\n${songInfo.name}\n${songInfo.url}`);
   },
 };
 
