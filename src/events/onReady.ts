@@ -32,9 +32,11 @@ const onReady = async (bot: Client) => {
   });
 
   // register global commands (aprox 1 hour to register)
-  await rest.put(Routes.applicationCommands(clientId), {
-    body: commandData,
-  });
+  if (process.env.NODE_ENV === 'production') {
+    await rest.put(Routes.applicationCommands(clientId), {
+      body: commandData,
+    });
+  }
 
   console.log(`✅ ${commands.length} Commands registered`);
 
