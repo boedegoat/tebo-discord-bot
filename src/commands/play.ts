@@ -8,15 +8,15 @@ import { GuildMember, VoiceChannel } from 'discord.js';
 import Command from '../interfaces/Command';
 import createEmbed from '../lib/createEmbed';
 
+// @ts-ignore
 const events = music.event;
 
 // @ts-ignore
-events.on('playSong', async (channel, songInfo, requester) => {
+events.on('playSong', async (channel, songInfo) => {
   /* See all the 'songInfo' options by logging it.. */
 
   channel.send({
-    content: `Started playing the song [${songInfo.title}](${songInfo.url}) by \`${songInfo.author}\`.
-    This was requested by ${requester.tag} (${requester.id})`,
+    content: `**🎵 Started playing the song**\n${songInfo.title}\n${songInfo.url}`,
   });
 });
 
@@ -33,8 +33,7 @@ const play: Command = {
     const channel = (interaction.member as GuildMember).voice.channel as VoiceChannel;
 
     if (!channel) {
-      await interaction.editReply('You must inside a voice channel to play a music');
-      return;
+      throw 'You must inside a voice channel to play a music';
     }
 
     const song = interaction.options.getString('song', true);
@@ -47,6 +46,7 @@ const play: Command = {
     await music.play({
       interaction,
       channel,
+      // @ts-ignore
       song,
     });
   },
