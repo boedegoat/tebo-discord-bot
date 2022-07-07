@@ -1,12 +1,15 @@
 import express from 'express';
+import http from 'http';
 
 // web server
 const app = express();
 
+const appName = process.env.APP_NAME;
+
 app.get('/', (req, res) => {
   res.json({
     app: 'Tebo Discord Bot',
-    inviteToServer: 'https://tebo-discord-bot.herokuapp.com/invite',
+    inviteToServer: `https://${appName}.herokuapp.com/invite`,
     version: process.env.npm_package_version,
     author: 'https://github.com/boedegoat',
   });
@@ -18,4 +21,11 @@ app.get('/invite', (req, res) => {
 
 const port = process.env.PORT || 5000;
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+
+  // ping server every 5 minutes to prevent app asleep on heroku
+  setInterval(() => {
+    http.get(`https://${appName}`);
+  }, 5 * 60 * 1000); // 5 minutes
+});

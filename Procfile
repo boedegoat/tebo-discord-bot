@@ -1,2 +1,2 @@
-worker npm start
-web npm run start-webserver
+worker: npm start
+web: npm run start-webserver
