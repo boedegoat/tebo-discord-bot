@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Player } from 'discord-music-player';
+import { Player, RepeatMode } from 'discord-music-player';
 import { GuildMember } from 'discord.js';
 import { bot } from '..';
 import Command from '../interfaces/Command';
@@ -26,35 +26,44 @@ player
     console.log(`Error: ${error} in ${queue.guild.name}`);
   });
 
-// TODO: add loop, queue loop, create progress bar, play playlist
+// TODO: add create progress bar, play playlist
 const song: Command = {
   data: new SlashCommandBuilder()
     .setName('song')
     .setDescription('Stay relaxed, and play your favorite song 🎵')
+
     .addSubcommand((subcommand) => subcommand
       .setName('play')
       .setDescription('Play or add your favorite song into queue')
       .addStringOption((option) => option
         .setName('name')
-        .setDescription('Gimme song name'))
-      .addStringOption((option) => option
-        .setName('url')
-        .setDescription('or the song url')))
+        .setDescription('Gimme the song name/url')
+        .setRequired(true)))
+
     .addSubcommand((subcommand) => subcommand
       .setName('pause')
       .setDescription('Pause current song'))
+
     .addSubcommand((subcommand) => subcommand
       .setName('resume')
       .setDescription('Resume current song'))
+
     .addSubcommand((subcommand) => subcommand
       .setName('skip')
       .setDescription('Skip current song and play next song in queue'))
+
     .addSubcommand((subcommand) => subcommand
       .setName('stop')
       .setDescription('Stop playing song'))
+
+    .addSubcommand((subcommand) => subcommand
+      .setName('loop')
+      .setDescription('toggle loop current song'))
+
     .addSubcommand((subcommand) => subcommand
       .setName('now-playing')
       .setDescription('Get current song playing'))
+
     .addSubcommand((subcommand) => subcommand
       .setName('help')
       .setDescription('Provide guides for using /music command')),
@@ -77,25 +86,14 @@ const song: Command = {
         });
 
         try {
-          const songName = options.getString('name');
-          const songUrl = options.getString('url');
+          const songName = options.getString('name', true);
 
-          if (!songName && !songUrl) {
-            throw 'Please provide either song name or song url to begin playing song';
-          }
-
-          if (songName) {
-            embed.setDescription(`🔍 Searching **${songName}**`);
-          }
-
-          if (songUrl) {
-            embed.setDescription('🔍 Finding song url');
-          }
+          embed.setDescription(`🔍 Searching **${songName}**`);
 
           await interaction.reply({ embeds: [embed] });
 
           await queue.join(channel);
-          await queue.play((songName || songUrl)!, {
+          await queue.play(songName, {
             requestedBy: interaction.user,
           });
 
@@ -162,6 +160,24 @@ const song: Command = {
         embed.setTitle(`🎵 Now Playing ${currentSong.name}`);
         embed.setDescription(`Requested by ${currentSong.requestedBy}`);
         embed.setURL(currentSong.url);
+
+        await interaction.reply({ embeds: [embed] });
+      },
+
+      loop: async () => {
+        const currentSong = guildQueue?.nowPlaying;
+
+        if (!currentSong) {
+          throw 'There is no song playing right now';
+        }
+
+        if (guildQueue.repeatMode === RepeatMode.DISABLED) {
+          guildQueue.setRepeatMode(RepeatMode.SONG);
+          embed.setDescription(`${currentSong} 🔄 looped`);
+        } else {
+          guildQueue.setRepeatMode(RepeatMode.DISABLED);
+          embed.setDescription(`${currentSong} loop disabled`);
+        }
 
         await interaction.reply({ embeds: [embed] });
       },
