@@ -45,7 +45,7 @@ const song: Command = {
       .setDescription('Pause current song'))
     .addSubcommand((subcommand) => subcommand
       .setName('resume')
-      .setDescription('resume current song'))
+      .setDescription('Resume current song'))
     .addSubcommand((subcommand) => subcommand
       .setName('skip')
       .setDescription('Skip current song and play next song in queue'))
