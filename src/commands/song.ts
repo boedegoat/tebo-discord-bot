@@ -26,7 +26,7 @@ player
     console.log(`Error: ${error} in ${queue.guild.name}`);
   });
 
-// TODO: add create progress bar, play playlist
+// TODO: add play playlist
 const song: Command = {
   data: new SlashCommandBuilder()
     .setName('song')
@@ -81,9 +81,8 @@ const song: Command = {
           throw 'You must inside a voice channel to play a song';
         }
 
-        const queue = player.createQueue(interaction.guildId!, {
-          data: { interaction },
-        });
+        const queue = player.createQueue(interaction.guildId!);
+        queue.setData({ interaction });
 
         try {
           const songName = options.getString('name', true);
@@ -93,9 +92,11 @@ const song: Command = {
           await interaction.reply({ embeds: [embed] });
 
           await queue.join(channel);
-          await queue.play(songName, {
+
+          const songPlayed = await queue.play(songName, {
             requestedBy: interaction.user,
           });
+          songPlayed.setData({ guildQueue });
 
           await interaction.deleteReply();
         } catch (err) {
@@ -156,9 +157,11 @@ const song: Command = {
           throw 'There is no song playing right now';
         }
 
+        const progressBar = guildQueue.createProgressBar();
+
         embed.setThumbnail(currentSong.thumbnail);
         embed.setTitle(`🎵 Now Playing ${currentSong.name}`);
-        embed.setDescription(`Requested by ${currentSong.requestedBy}`);
+        embed.setDescription(`${progressBar.prettier}\nRequested by ${currentSong.requestedBy}`);
         embed.setURL(currentSong.url);
 
         await interaction.reply({ embeds: [embed] });

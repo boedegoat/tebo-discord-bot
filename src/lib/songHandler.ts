@@ -1,5 +1,5 @@
 import { Playlist, Queue, Song } from 'discord-music-player';
-import { MessageEmbed } from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 import createEmbed from './createEmbed';
 
 // eslint-disable-next-line no-unused-vars
@@ -9,11 +9,15 @@ type QueueHandler = (queue: Queue) => Promise<void>
 // eslint-disable-next-line no-unused-vars
 type PlaylistHandler = (queue: Queue, playlist: Playlist) => Promise<void>
 
-// eslint-disable-next-line no-unused-vars
-const reply = async (queue: Queue, embedCallback: (embed: MessageEmbed) => MessageEmbed) => {
+const reply = async (
+  queue: Queue,
+  // eslint-disable-next-line no-unused-vars
+  embedCallback: (embed: MessageEmbed) => MessageEmbed,
+): Promise<{ message: Message, embed: MessageEmbed}> => {
   const { interaction } = queue.data;
   const embed = embedCallback(createEmbed());
-  await interaction.channel.send({ embeds: [embed] });
+  const message = await interaction.channel.send({ embeds: [embed] });
+  return { message, embed };
 };
 
 export const onAddToQueue: SongHandler = async (queue, song) => {
