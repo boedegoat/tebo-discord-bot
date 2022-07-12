@@ -26,7 +26,6 @@ player
     console.log(`Error: ${error} in ${queue.guild.name}`);
   });
 
-// TODO: add play playlist
 const song: Command = {
   data: new SlashCommandBuilder()
     .setName('song')
@@ -65,6 +64,14 @@ const song: Command = {
     .addSubcommand((subcommand) => subcommand
       .setName('shuffle')
       .setDescription('Shuffle song queue'))
+
+    .addSubcommand((subcommand) => subcommand
+      .setName('seek')
+      .setDescription('Seeks/forward current song')
+      .addNumberOption((option) => option
+        .setName('seconds')
+        .setDescription('How many seconds you want to seek/forward ?')
+        .setRequired(true)))
 
     .addSubcommand((subcommand) => subcommand
       .setName('now-playing')
@@ -214,6 +221,26 @@ const song: Command = {
 
         guildQueue.shuffle();
         embed.setDescription('Queue shuffled');
+        await interaction.reply({ embeds: [embed] });
+      },
+
+      seek: async () => {
+        const currentSong = guildQueue?.nowPlaying;
+
+        if (!currentSong) {
+          throw 'There is no song playing right now';
+        }
+
+        const seconds = options.getNumber('seconds', true);
+
+        const to = currentSong.seekTime + (seconds * 1000);
+
+        await guildQueue.seek(to);
+
+        embed.setTitle(`🎵 ${currentSong.name}`);
+        embed.setThumbnail(currentSong.thumbnail);
+        embed.setDescription(`⏯ Seeks **${seconds} seconds**\n${guildQueue.createProgressBar().prettier}`);
+        embed.setURL(currentSong.url);
         await interaction.reply({ embeds: [embed] });
       },
 
