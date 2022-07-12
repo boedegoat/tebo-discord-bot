@@ -15,5 +15,11 @@ export default interface Command {
      * default : `false`
      */
     ephemeral?: boolean
+    /**
+     * If sets to `true`, the reply will be defered.
+     *
+     * default : `false`
+     */
+    useDeferReply?: boolean
 // eslint-disable-next-line semi
 }

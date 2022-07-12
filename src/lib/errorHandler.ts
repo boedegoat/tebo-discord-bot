@@ -21,7 +21,9 @@ const errorHandler = ({ err, interaction }: any) => {
   const embed = createEmbed('error');
   embed.setDescription(errMsg);
 
-  interaction.editReply({ embeds: [embed] });
+  interaction.editReply({ embeds: [embed] }).catch(() => {
+    interaction.reply({ embeds: [embed] });
+  });
 };
 
 export default errorHandler;

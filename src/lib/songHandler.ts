@@ -32,12 +32,12 @@ export const onSongPlayed: SongHandler = async (queue, song) => {
 
 export const onChannelEmpty: QueueHandler = async (queue) => {
   await reply(queue, (embed) => embed
-    .setDescription('Everyone left the Voice Channel, music queue ended'));
+    .setDescription('Everyone left the Voice Channel, song queue ended'));
 };
 
 export const onQueueEnd: QueueHandler = async (queue) => {
   await reply(queue, (embed) => embed
-    .setDescription('The music queue has ended'));
+    .setDescription('The song queue has ended'));
 };
 
 export const onPlaylistAdd: PlaylistHandler = async (queue, playlist) => {
@@ -47,7 +47,7 @@ export const onPlaylistAdd: PlaylistHandler = async (queue, playlist) => {
 
 export const onClientDisconnect: QueueHandler = async (queue) => {
   await reply(queue, (embed) => embed
-    .setDescription('I was kicked from the Voice Channel, music queue ended'));
+    .setDescription('I was kicked from the Voice Channel, song queue ended'));
 };
 
 export const onClientUndeafen: QueueHandler = async (queue) => {

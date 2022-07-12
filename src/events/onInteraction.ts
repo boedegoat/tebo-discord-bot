@@ -8,7 +8,10 @@ const onInteraction = async (interaction: Interaction) => {
   const command = commands.find((c) => c.data.name === interaction.commandName);
   if (command) {
     try {
-      await interaction.deferReply({ ephemeral: command.ephemeral ?? false });
+      const { useDeferReply = false, ephemeral = false } = command;
+      if (useDeferReply) {
+        await interaction.deferReply({ ephemeral });
+      }
       await command.run(interaction);
     } catch (err: any) {
       errorHandler({ err, interaction });

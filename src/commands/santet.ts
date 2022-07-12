@@ -88,6 +88,8 @@ const runSantet = async ({
 
 const santet: Command = {
   ephemeral: true,
+  useDeferReply: true,
+
   data: new SlashCommandBuilder()
     .setName('santet')
     .setDescription('This one is a little bit sacred. Use it wisely 😈')
