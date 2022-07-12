@@ -113,6 +113,8 @@ const song: Command = {
         }
 
         guildQueue.stop();
+        embed.setDescription('Stopping music player');
+        await interaction.reply({ embeds: [embed] });
       },
 
       'now-playing': async () => {
