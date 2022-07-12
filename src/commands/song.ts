@@ -26,6 +26,7 @@ player
     console.log(`Error: ${error} in ${queue.guild.name}`);
   });
 
+// TODO: add resume, pause, loop, queue loop, create progress bar, play playlist
 const song: Command = {
   data: new SlashCommandBuilder()
     .setName('song')
@@ -47,7 +48,10 @@ const song: Command = {
       .setDescription('Stop playing song'))
     .addSubcommand((subcommand) => subcommand
       .setName('now-playing')
-      .setDescription('Get current song playing')),
+      .setDescription('Get current song playing'))
+    .addSubcommand((subcommand) => subcommand
+      .setName('help')
+      .setDescription('Provide guides for using /music command')),
 
   run: async (interaction) => {
     const { options, member } = interaction;
@@ -129,6 +133,16 @@ const song: Command = {
         embed.setDescription(`Requested by ${currentSong.requestedBy}`);
         embed.setURL(currentSong.url);
 
+        await interaction.reply({ embeds: [embed] });
+      },
+
+      help: async () => {
+        const songOptions = song.data.toJSON().options!;
+        embed.setTitle(`/song Guides (${songOptions.length} commands)`);
+        embed.addFields(songOptions.map((songOption) => ({
+          name: `/${songOption.name}`,
+          value: songOption.description,
+        })));
         await interaction.reply({ embeds: [embed] });
       },
     };

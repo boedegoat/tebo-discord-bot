@@ -1,6 +1,6 @@
 {
   "name": "learn-discord-js",
-  "version": "1.6.5",
+  "version": "1.6.6",
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
