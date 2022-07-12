@@ -26,7 +26,7 @@ player
     console.log(`Error: ${error} in ${queue.guild.name}`);
   });
 
-// TODO: add resume, pause, loop, queue loop, create progress bar, play playlist
+// TODO: add loop, queue loop, create progress bar, play playlist
 const song: Command = {
   data: new SlashCommandBuilder()
     .setName('song')
@@ -40,6 +40,12 @@ const song: Command = {
       .addStringOption((option) => option
         .setName('url')
         .setDescription('or the song url')))
+    .addSubcommand((subcommand) => subcommand
+      .setName('pause')
+      .setDescription('Pause current song'))
+    .addSubcommand((subcommand) => subcommand
+      .setName('resume')
+      .setDescription('resume current song'))
     .addSubcommand((subcommand) => subcommand
       .setName('skip')
       .setDescription('Skip current song and play next song in queue'))
@@ -98,6 +104,30 @@ const song: Command = {
           if (!guildQueue) queue.stop();
           errorHandler({ err, interaction });
         }
+      },
+
+      pause: async () => {
+        const currentSong = guildQueue?.nowPlaying;
+        if (!currentSong) {
+          throw 'There is no song playing right now';
+        }
+
+        guildQueue.setPaused(true);
+
+        embed.setDescription(`${currentSong.name} ⏸ paused`);
+        await interaction.reply({ embeds: [embed] });
+      },
+
+      resume: async () => {
+        const currentSong = guildQueue?.nowPlaying;
+        if (!currentSong) {
+          throw 'There is no song playing right now';
+        }
+
+        guildQueue.setPaused(false);
+
+        embed.setDescription(`${currentSong.name} ▶ resumed`);
+        await interaction.reply({ embeds: [embed] });
       },
 
       skip: async () => {
