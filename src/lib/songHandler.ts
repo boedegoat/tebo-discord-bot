@@ -46,7 +46,7 @@ export const onQueueEnd: QueueHandler = async (queue) => {
 
 export const onPlaylistAdd: PlaylistHandler = async (queue, playlist) => {
   await reply(queue, (embed) => embed
-    .setDescription(`Playlist ${playlist} with ${playlist.songs.length} added to the queue`));
+    .setDescription(`**Playlist ${playlist} (${playlist.songs.length} song${playlist.songs.length > 1 ? 's' : ''})** added to the queue`));
 };
 
 export const onClientDisconnect: QueueHandler = async (queue) => {

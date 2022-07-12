@@ -37,8 +37,10 @@ const song: Command = {
       .setDescription('Play or add your favorite song into queue')
       .addStringOption((option) => option
         .setName('name')
-        .setDescription('Gimme the song name/url')
-        .setRequired(true)))
+        .setDescription('Gimme the song name/link'))
+      .addStringOption((option) => option
+        .setName('playlist')
+        .setDescription('Or you can also play your playlist by giving me the link')))
 
     .addSubcommand((subcommand) => subcommand
       .setName('pause')
@@ -59,6 +61,10 @@ const song: Command = {
     .addSubcommand((subcommand) => subcommand
       .setName('loop')
       .setDescription('toggle loop current song'))
+
+    .addSubcommand((subcommand) => subcommand
+      .setName('shuffle')
+      .setDescription('Shuffle song queue'))
 
     .addSubcommand((subcommand) => subcommand
       .setName('now-playing')
@@ -83,22 +89,38 @@ const song: Command = {
 
         const queue = player.createQueue(interaction.guildId!);
         queue.setData({ interaction });
+        await queue.join(channel);
 
         try {
-          const songName = options.getString('name', true);
+          const songName = options.getString('name');
+          const playlistLink = options.getString('playlist');
 
-          embed.setDescription(`🔍 Searching **${songName}**`);
+          if (!songName && !playlistLink) {
+            throw 'Please provide either song name/link or playlist link';
+          }
 
-          await interaction.reply({ embeds: [embed] });
+          if (playlistLink) {
+            embed.setDescription('🔍 Finding playlist');
+            await interaction.reply({ embeds: [embed] });
 
-          await queue.join(channel);
+            await queue.playlist(playlistLink, {
+              requestedBy: interaction.user,
+            });
 
-          const songPlayed = await queue.play(songName, {
-            requestedBy: interaction.user,
-          });
-          songPlayed.setData({ guildQueue });
+            await interaction.deleteReply();
+            return;
+          }
 
-          await interaction.deleteReply();
+          if (songName) {
+            embed.setDescription(`🔍 Searching **${songName}**`);
+            await interaction.reply({ embeds: [embed] });
+
+            await queue.play(songName, {
+              requestedBy: interaction.user,
+            });
+
+            await interaction.deleteReply();
+          }
         } catch (err) {
           if (!guildQueue) queue.stop();
           errorHandler({ err, interaction });
@@ -182,6 +204,16 @@ const song: Command = {
           embed.setDescription(`${currentSong} loop disabled`);
         }
 
+        await interaction.reply({ embeds: [embed] });
+      },
+
+      shuffle: async () => {
+        if (!guildQueue) {
+          throw 'There is no song playing right now';
+        }
+
+        guildQueue.shuffle();
+        embed.setDescription('Queue shuffled');
         await interaction.reply({ embeds: [embed] });
       },
 
