@@ -10,11 +10,12 @@ const help: Command = {
   run: async (interaction) => {
     const embed = createEmbed();
     embed.setTitle(`Guides (${commands.length} commands)`);
+    embed.setDescription('💡 tip:\nuse **arrow keys** for selecting different commands\nuse **tab** for selecting command parameters');
     embed.addFields(commands.map((command) => ({
       name: `/${command.data.name}`,
       value: command.data.description,
     })));
-    interaction.editReply({ embeds: [embed] });
+    interaction.reply({ embeds: [embed] });
   },
 };
 
