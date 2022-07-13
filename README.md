@@ -37,7 +37,7 @@ A multi-purpose bot for all your server needs 👍
     ```
 
 ## 📃 Roadmap
-- [] Utilize [dall-e image generator ai](https://www.reddit.com/r/Discordjs/comments/vs9ppy/dalle_mini_discord_bot_using_discordjs/if0vj6g/)
+- [x] Utilize [dall-e image generator ai](https://www.reddit.com/r/Discordjs/comments/vs9ppy/dalle_mini_discord_bot_using_discordjs/if0vj6g/)
 - [] Use database (mongodb + prisma) to store
     - Most songs played in a guild
     - Most user cursed (santet) in a guild
