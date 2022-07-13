@@ -2,7 +2,7 @@ import createEmbed from './createEmbed';
 
 // TODO: change props type
 const errorHandler = ({ err, interaction }: any) => {
-  console.log({ err });
+  console.log({ err, date: new Date().toLocaleString() });
   let errMsg = '';
 
   if (err instanceof Error) {

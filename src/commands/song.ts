@@ -4,7 +4,6 @@ import { GuildMember } from 'discord.js';
 import { bot } from '..';
 import Command from '../interfaces/Command';
 import createEmbed from '../lib/createEmbed';
-import errorHandler from '../lib/errorHandler';
 import * as handler from '../lib/songHandler';
 
 type SubcommandHandlers = { [subcommand: string]: () => Promise<void> }
@@ -98,39 +97,34 @@ const song: Command = {
         queue.setData({ interaction });
         await queue.join(channel);
 
-        try {
-          const songName = options.getString('name');
-          const playlistLink = options.getString('playlist');
+        const songName = options.getString('name');
+        const playlistLink = options.getString('playlist');
 
-          if (!songName && !playlistLink) {
-            throw 'Please provide either song name/link or playlist link';
-          }
+        if (!songName && !playlistLink) {
+          throw 'Please provide either song name/link or playlist link';
+        }
 
-          if (playlistLink) {
-            embed.setDescription('🔍 Finding playlist');
-            await interaction.reply({ embeds: [embed] });
+        if (playlistLink) {
+          embed.setDescription('🔍 Finding playlist');
+          await interaction.reply({ embeds: [embed] });
 
-            await queue.playlist(playlistLink, {
-              requestedBy: interaction.user,
-            });
+          await queue.playlist(playlistLink, {
+            requestedBy: interaction.user,
+          });
 
-            await interaction.deleteReply();
-            return;
-          }
+          await interaction.deleteReply();
+          return;
+        }
 
-          if (songName) {
-            embed.setDescription(`🔍 Searching **${songName}**`);
-            await interaction.reply({ embeds: [embed] });
+        if (songName) {
+          embed.setDescription(`🔍 Searching **${songName}**`);
+          await interaction.reply({ embeds: [embed] });
 
-            await queue.play(songName, {
-              requestedBy: interaction.user,
-            });
+          await queue.play(songName, {
+            requestedBy: interaction.user,
+          });
 
-            await interaction.deleteReply();
-          }
-        } catch (err) {
-          if (!guildQueue) queue.stop();
-          errorHandler({ err, interaction });
+          await interaction.deleteReply();
         }
       },
 
