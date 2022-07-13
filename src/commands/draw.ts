@@ -14,10 +14,10 @@ const draw: Command = {
     .setDescription('Change any text to images by using AI 🎨')
     .addStringOption((option) => option
       .setName('text')
-      .setDescription('What do you want to see ? (e.g. a coffee shop logo that has a colorful unicorn drinking a coffee)')
+      .setDescription('What do you want to see ? (e.g. super cozy bed next to beautiful waterfall)')
       .setRequired(true)),
   run: async (interaction) => {
-    const { options } = interaction;
+    const { options, channel } = interaction;
 
     const text = options.getString('text', true);
 
@@ -61,10 +61,18 @@ const draw: Command = {
     finishEmbed.setTitle(text);
     finishEmbed.setDescription(`Requested by ${interaction.user}`);
 
-    await interaction.editReply({
+    await interaction.deleteReply();
+
+    const sendData = {
       embeds: [finishEmbed],
       files: [attachment],
-    });
+    };
+
+    if (channel) {
+      await channel.send(sendData);
+    } else {
+      await interaction.reply(sendData);
+    }
   },
 };
 
