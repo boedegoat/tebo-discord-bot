@@ -20,14 +20,20 @@ A multi-purpose bot for all your server needs 👍
     ```
     npm install
     ```
-3. Spin up dev server
+3. Spin up bot dev server 🚀
 
     ```
     npm run dev
     ```
-    to run webserver
+4. Build + test
+
     ```
-    npm run start-webserver
+    npm run build
+    ```
+5. Run production server
+
+    ```
+    npm start
     ```
 
 ## 🤝 Contributing
