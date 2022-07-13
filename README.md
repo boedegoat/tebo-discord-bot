@@ -32,4 +32,5 @@ A multi-purpose bot for all your server needs 👍
 
 ## 🤝 Contributing
 Contributions, issues and feature are welcome
+
 Feel free to check [issues page](https://github.com/boedegoat/tebo-discord-bot/issues)
