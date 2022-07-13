@@ -34,11 +34,9 @@ const song: Command = {
       .setName('play')
       .setDescription('Play or add your favorite song into queue')
       .addStringOption((option) => option
-        .setName('name')
-        .setDescription('Gimme the song name/link'))
-      .addStringOption((option) => option
-        .setName('playlist')
-        .setDescription('Or you can also play your playlist by giving me the link')))
+        .setName('song-or-playlist')
+        .setDescription('Gimme the song or playlist name/link')
+        .setRequired(true)))
 
     .addSubcommand((subcommand) => subcommand
       .setName('pause')
@@ -97,33 +95,22 @@ const song: Command = {
         queue.setData({ interaction });
         await queue.join(channel);
 
-        const songName = options.getString('name');
-        const playlistLink = options.getString('playlist');
+        const nameInput = options.getString('song-or-playlist', true);
 
-        if (!songName && !playlistLink) {
-          throw 'Please provide either song name/link or playlist link';
-        }
+        embed.setDescription(`🔍 Searching **${nameInput}**`);
+        await interaction.reply({ embeds: [embed] });
 
-        if (playlistLink) {
-          embed.setDescription('🔍 Finding playlist');
-          await interaction.reply({ embeds: [embed] });
-
-          await queue.playlist(playlistLink, {
+        try {
+          await queue.play(nameInput, {
             requestedBy: interaction.user,
           });
-
-          await interaction.deleteReply();
-          return;
-        }
-
-        if (songName) {
-          embed.setDescription(`🔍 Searching **${songName}**`);
-          await interaction.reply({ embeds: [embed] });
-
-          await queue.play(songName, {
-            requestedBy: interaction.user,
-          });
-
+        } catch (err: any) {
+          if (err.message === 'The was no YouTube song found by that query.') {
+            await queue.playlist(nameInput, {
+              requestedBy: interaction.user,
+            });
+          }
+        } finally {
           await interaction.deleteReply();
         }
       },
