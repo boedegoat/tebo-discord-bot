@@ -46,25 +46,20 @@ export const onSongPlayed: SongHandler = async (queue, song) => {
 
 export const onChannelEmpty: QueueHandler = async (queue) => {
   await reply(queue, (embed) => embed
-    .setDescription('Everyone left the Voice Channel, song queue ended'));
+    .setTitle('Everyone left the Voice Channel, song queue ended'));
 };
 
 export const onQueueEnd: QueueHandler = async (queue) => {
   await reply(queue, (embed) => embed
-    .setDescription('The song queue has ended'));
-};
-
-export const onPlaylistAdd: PlaylistHandler = async (queue, playlist) => {
-  await reply(queue, (embed) => embed
-    .setDescription(`**Playlist ${playlist} (${playlist.songs.length} song${playlist.songs.length > 1 ? 's' : ''})** added to the queue`));
+    .setTitle("I've got no more songs to play, run `/song play` again to listen more!"));
 };
 
 export const onClientDisconnect: QueueHandler = async (queue) => {
   await reply(queue, (embed) => embed
-    .setDescription('I was kicked from the Voice Channel, song queue ended'));
+    .setTitle('I was kicked from the Voice Channel, song queue ended'));
 };
 
 export const onClientUndeafen: QueueHandler = async (queue) => {
   await reply(queue, (embed) => embed
-    .setDescription('I got undefeanded'));
+    .setTitle('I got undefeanded'));
 };

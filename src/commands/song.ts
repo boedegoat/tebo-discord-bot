@@ -17,7 +17,6 @@ player
   .on('songChanged', handler.onSongPlayed)
   .on('songFirst', handler.onSongPlayed)
   .on('channelEmpty', handler.onChannelEmpty)
-  .on('playlistAdd', handler.onPlaylistAdd)
   .on('queueDestroyed', handler.onQueueEnd)
   .on('queueEnd', handler.onQueueEnd)
   .on('clientDisconnect', handler.onClientDisconnect)
@@ -69,6 +68,7 @@ const song: Command = {
       .addNumberOption((option) => option
         .setName('seconds')
         .setDescription('How many seconds you want to seek/forward ?')
+        .setMinValue(1)
         .setRequired(true)))
 
     .addSubcommand((subcommand) => subcommand
@@ -160,6 +160,11 @@ const song: Command = {
               value: songPlayed.author,
               inline: true,
             },
+            {
+              name: 'Songs',
+              value: `${songPlayed.songs.length} songs`,
+              inline: true,
+            },
           ];
         }
 
@@ -175,7 +180,7 @@ const song: Command = {
 
         guildQueue.setPaused(true);
 
-        embed.setDescription(`${currentSong.name} ⏸ paused`);
+        embed.setDescription('⏸ Paused');
         await interaction.reply({ embeds: [embed] });
       },
 
@@ -187,7 +192,7 @@ const song: Command = {
 
         guildQueue.setPaused(false);
 
-        embed.setDescription(`${currentSong.name} ▶ resumed`);
+        embed.setDescription('▶ Resumed');
         await interaction.reply({ embeds: [embed] });
       },
 
@@ -198,7 +203,7 @@ const song: Command = {
           throw 'There is no song playing right now';
         }
 
-        embed.setDescription(`Skipping ${currentSong.name}`);
+        embed.setDescription('⏯ Song Skipped');
         await interaction.reply({ embeds: [embed] });
       },
 
@@ -208,7 +213,7 @@ const song: Command = {
         }
 
         guildQueue.stop();
-        embed.setDescription('Stopping music player');
+        embed.setDescription('🛑 Song Queue Stopped');
         await interaction.reply({ embeds: [embed] });
       },
 
@@ -221,10 +226,27 @@ const song: Command = {
 
         const progressBar = guildQueue.createProgressBar();
 
-        embed.setThumbnail(currentSong.thumbnail);
-        embed.setTitle(`🎵 Now Playing ${currentSong.name}`);
-        embed.setDescription(`${progressBar.prettier}\nRequested by ${currentSong.requestedBy}`);
-        embed.setURL(currentSong.url);
+        embed
+          .setAuthor({
+            name: '🔊 Now Playing',
+            iconURL: currentSong.requestedBy!.avatarURL()!,
+          })
+          .setImage(currentSong.thumbnail)
+          .setTitle(currentSong.name)
+          .setDescription(`Requested by ${currentSong.requestedBy}`)
+          .setURL(currentSong.url)
+          .setFields([
+            {
+              name: 'Channel',
+              value: currentSong.author,
+              inline: true,
+            },
+            {
+              name: 'Duration',
+              value: progressBar.times,
+              inline: true,
+            },
+          ]);
 
         await interaction.reply({ embeds: [embed] });
       },
@@ -238,10 +260,10 @@ const song: Command = {
 
         if (guildQueue.repeatMode === RepeatMode.DISABLED) {
           guildQueue.setRepeatMode(RepeatMode.SONG);
-          embed.setDescription(`${currentSong} 🔄 looped`);
+          embed.setDescription('🔄 Looped');
         } else {
           guildQueue.setRepeatMode(RepeatMode.DISABLED);
-          embed.setDescription(`${currentSong} loop disabled`);
+          embed.setDescription('Loop disabled');
         }
 
         await interaction.reply({ embeds: [embed] });
@@ -253,7 +275,7 @@ const song: Command = {
         }
 
         guildQueue.shuffle();
-        embed.setDescription('Queue shuffled');
+        embed.setDescription('🔁 Queue Shuffled');
         await interaction.reply({ embeds: [embed] });
       },
 
@@ -272,7 +294,8 @@ const song: Command = {
 
         embed.setTitle(`🎵 ${currentSong.name}`);
         embed.setThumbnail(currentSong.thumbnail);
-        embed.setDescription(`⏯ Seeks **${seconds} seconds**\n${guildQueue.createProgressBar().prettier}`);
+        embed.setAuthor({ name: `⏩ Seeks ${seconds} second${seconds > 1 ? 's' : ''}` });
+        embed.setDescription(guildQueue.createProgressBar().prettier);
         embed.setURL(currentSong.url);
         await interaction.reply({ embeds: [embed] });
       },
