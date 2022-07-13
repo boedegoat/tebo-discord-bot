@@ -34,3 +34,6 @@ A multi-purpose bot for all your server needs 👍
 Contributions, issues and feature are welcome
 
 Feel free to check [issues page](https://github.com/boedegoat/tebo-discord-bot/issues)
+
+## 📝 License
+[MIT](https://github.com/boedegoat/tebo-discord-bot/blob/master/LICENCE)
