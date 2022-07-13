@@ -36,6 +36,19 @@ A multi-purpose bot for all your server needs 👍
     npm start
     ```
 
+## 📃 Roadmap
+- [] Utilize [dall-e image generator ai](https://www.reddit.com/r/Discordjs/comments/vs9ppy/dalle_mini_discord_bot_using_discordjs/if0vj6g/)
+- [] Use database (mongodb + prisma) to store
+    - Most songs played in a guild
+    - Most user cursed (santet) in a guild
+    - and more...
+- [] Create a unique economy commands
+    - store user economy data in database
+    - user can earn money from santeting other user and from other methods (beg, hacking, steal, by1, trolling, school quiz, etc)
+    - user can interact with bank to store or withdraw money
+    - create richest user leaderboards
+    - maybe user can invest on stock?
+
 ## 🤝 Contributing
 Contributions, issues and feature are welcome
 
