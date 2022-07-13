@@ -20,18 +20,28 @@ const reply = async (
   return { message, embed };
 };
 
-export const onAddToQueue: SongHandler = async (queue, song) => {
-  if (queue.songs.length === 1) return;
-  await reply(queue, (embed) => embed
-    .setDescription(`**${song.name}** added to queue`));
-};
-
 export const onSongPlayed: SongHandler = async (queue, song) => {
   await reply(queue, (embed) => embed
-    .setThumbnail(song.thumbnail)
-    .setTitle(`🎵 Playing ${song.name}`)
+    .setAuthor({
+      name: '🔊 Now Playing',
+      iconURL: song.requestedBy!.avatarURL()!,
+    })
+    .setImage(song.thumbnail)
+    .setTitle(song.name)
     .setDescription(`Requested by ${song.requestedBy}`)
-    .setURL(song.url));
+    .setURL(song.url)
+    .setFields([
+      {
+        name: 'Channel',
+        value: song.author,
+        inline: true,
+      },
+      {
+        name: 'Duration',
+        value: song.duration,
+        inline: true,
+      },
+    ]));
 };
 
 export const onChannelEmpty: QueueHandler = async (queue) => {

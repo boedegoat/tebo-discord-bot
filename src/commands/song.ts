@@ -1,6 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Player, RepeatMode } from 'discord-music-player';
-import { GuildMember } from 'discord.js';
+import {
+  Player, RepeatMode, Song,
+} from 'discord-music-player';
+import { EmbedFieldData, GuildMember } from 'discord.js';
 import { bot } from '..';
 import Command from '../interfaces/Command';
 import createEmbed from '../lib/createEmbed';
@@ -12,7 +14,6 @@ export const player = new Player(bot);
 
 // music event handlers
 player
-  .on('songAdd', handler.onAddToQueue)
   .on('songChanged', handler.onSongPlayed)
   .on('songFirst', handler.onSongPlayed)
   .on('channelEmpty', handler.onChannelEmpty)
@@ -97,22 +98,73 @@ const song: Command = {
 
         const nameInput = options.getString('song-or-playlist', true);
 
-        embed.setDescription(`🔍 Searching **${nameInput}**`);
+        embed.setAuthor({
+          name: '🔍 Searching',
+        });
+        embed.setDescription(`**${nameInput}**`);
         await interaction.reply({ embeds: [embed] });
 
-        try {
-          await queue.play(nameInput, {
-            requestedBy: interaction.user,
-          });
-        } catch (err: any) {
+        const songPlayed = await queue.play(nameInput, {
+          requestedBy: interaction.user,
+        }).catch(async (err) => {
           if (err.message === 'The was no YouTube song found by that query.') {
-            await queue.playlist(nameInput, {
+            return queue.playlist(nameInput, {
               requestedBy: interaction.user,
             });
           }
-        } finally {
-          await interaction.deleteReply();
+          return null;
+        });
+
+        if (!songPlayed) {
+          throw 'song/playlist not found';
         }
+
+        if (queue.songs.length === 1) {
+          await interaction.deleteReply();
+          return;
+        }
+
+        const queueEmbed = createEmbed();
+        queueEmbed.setAuthor({
+          name: 'Added to Queue',
+          iconURL: interaction.user.avatarURL()!,
+        });
+        queueEmbed.setTitle(songPlayed.name);
+        queueEmbed.setURL(songPlayed.url);
+
+        let fields: EmbedFieldData[] = [];
+
+        if (songPlayed instanceof Song) {
+          queueEmbed.setThumbnail(songPlayed.thumbnail);
+          fields = [...fields,
+            {
+              name: 'Channel',
+              value: songPlayed.author,
+              inline: true,
+            },
+            {
+              name: 'Queue Position',
+              value: `${songPlayed.queue.songs.findIndex((s) => s.url === songPlayed.url) + 1}`,
+              inline: true,
+            },
+            {
+              name: 'Duration',
+              value: songPlayed.duration,
+              inline: true,
+            },
+          ];
+        } else {
+          fields = [
+            {
+              name: 'Owner',
+              value: songPlayed.author,
+              inline: true,
+            },
+          ];
+        }
+
+        queueEmbed.setFields(fields);
+        await interaction.editReply({ embeds: [queueEmbed] });
       },
 
       pause: async () => {

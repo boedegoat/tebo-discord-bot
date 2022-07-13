@@ -28,7 +28,8 @@
         "linebreak-style": "off",
         "no-console": "off",
         "no-await-in-loop": "off",
-        "no-throw-literal": "off"
+        "no-throw-literal": "off",
+        "consistent-return": "off"
     },
     "settings": {
         "import/resolver": {
