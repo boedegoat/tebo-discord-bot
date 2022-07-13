@@ -145,7 +145,7 @@ const santet: Command = {
       }
 
       // check if targeted user is bot creator
-      if (targetUser.id === process.env.CREATOR_ID) {
+      if (targetUser.id === '485048406398468108') {
         throw "You can't santet my creator";
       }
 
