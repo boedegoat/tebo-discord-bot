@@ -1,7 +1,7 @@
 {
   "name": "learn-discord-js",
   "version": "1.8.0",
-  "description": "",
+  "description": "A multi-purpose bot for all your server needs",
   "main": "./dist/index.js",
   "scripts": {
     "dev": "nodemon -r dotenv/config ./src/index.ts",
@@ -11,8 +11,15 @@
     "dev-webserver": "nodemon -r dotenv/config ./src/server.ts",
     "start-webserver": "node -r dotenv/config ./dist/server.js -p $PORT"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "discord",
+    "bot",
+    "music",
+    "troll",
+    "ai",
+    "art"
+  ],
+  "author": "bhremada.fka@gmail.com",
   "license": "MIT",
   "dependencies": {
     "@discordjs/builders": "^0.15.0",
