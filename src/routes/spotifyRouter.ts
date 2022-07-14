@@ -1,12 +1,12 @@
 import axios from 'axios';
 import express from 'express';
 import querystring from 'query-string';
-import generateRandomString from '../lib/generateRandomString';
+import { generateRandomString, getBaseURL } from '../lib/utils';
 
 const spotifyRouter = express.Router();
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-const redirectUri = `${process.env.NODE_ENV === 'production' ? `https://${global.appName}` : `http://localhost:${global.port}`}/spotify/callback`;
+const redirectUri = `${getBaseURL()}/spotify/callback`;
 
 const setSpotifyToken = (data: any) => {
   global.spotifyToken = {

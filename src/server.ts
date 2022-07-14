@@ -2,16 +2,17 @@ import 'express-async-errors';
 import express from 'express';
 import http from 'http';
 import spotifyRouter from './routes/spotifyRouter';
+import { getAppName, getPort } from './lib/utils';
 
 // web server
 const app = express();
-global.port = process.env.PORT || 5000;
-global.appName = `${process.env.APP_NAME}.herokuapp.com`;
+const port = getPort();
+const appName = getAppName();
 
 app.get('/', (req, res) => {
   res.json({
     app: 'Tebo Discord Bot',
-    inviteToServer: `https://${global.appName}/invite`,
+    inviteToServer: `https://${appName}/invite`,
     version: process.env.npm_package_version,
     author: 'https://github.com/boedegoat',
   });
@@ -32,12 +33,12 @@ app.use((err, req, res, next) => {
 });
 
 const runWebServer = () => {
-  app.listen(global.port, () => {
-    console.log(`Server running on port ${global.port}`);
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 
     // ping server every 5 minutes to prevent app asleep on heroku
     setInterval(() => {
-      http.get(`http://${global.appName}`);
+      http.get(`http://${appName}`);
     }, 5 * 60 * 1000); // 5 minutes
   });
 };
