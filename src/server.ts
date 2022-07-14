@@ -5,13 +5,13 @@ import spotifyRouter from './routes/spotifyRouter';
 
 // web server
 const app = express();
-const port = process.env.PORT || 5000;
-const appName = `${process.env.APP_NAME}.herokuapp.com`;
+global.port = process.env.PORT || 5000;
+global.appName = `${process.env.APP_NAME}.herokuapp.com`;
 
 app.get('/', (req, res) => {
   res.json({
     app: 'Tebo Discord Bot',
-    inviteToServer: `https://${appName}/invite`,
+    inviteToServer: `https://${global.appName}/invite`,
     version: process.env.npm_package_version,
     author: 'https://github.com/boedegoat',
   });
@@ -32,12 +32,12 @@ app.use((err, req, res, next) => {
 });
 
 const runWebServer = () => {
-  app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+  app.listen(global.port, () => {
+    console.log(`Server running on port ${global.port}`);
 
     // ping server every 5 minutes to prevent app asleep on heroku
     setInterval(() => {
-      http.get(`http://${appName}`);
+      http.get(`http://${global.appName}`);
     }, 5 * 60 * 1000); // 5 minutes
   });
 };

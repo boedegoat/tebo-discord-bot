@@ -2,14 +2,19 @@ import axios from 'axios';
 import express from 'express';
 import querystring from 'query-string';
 import generateRandomString from '../lib/generateRandomString';
-import { setSpotifyToken } from '../lib/spotifyToken';
 
 const spotifyRouter = express.Router();
-const port = process.env.PORT || 5000;
-const appName = `${process.env.APP_NAME}.herokuapp.com`;
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-const redirectUri = `${process.env.NODE_ENV === 'production' ? `https://${appName}` : `http://localhost:${port}`}/spotify/callback`;
+const redirectUri = `${process.env.NODE_ENV === 'production' ? `https://${global.appName}` : `http://localhost:${global.port}`}/spotify/callback`;
+
+const setSpotifyToken = (data: any) => {
+  global.spotifyToken = {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    tokenType: data.token_type,
+  };
+};
 
 spotifyRouter.get('/login', (req, res) => {
   const state = generateRandomString(16);

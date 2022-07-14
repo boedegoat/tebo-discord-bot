@@ -23,9 +23,9 @@ spotifyRequest.interceptors.request.use(async (request) => {
 // If it returns a 401 error, the refreshAuth will be run,
 // and the request retried with the new token
 createAuthRefreshInterceptor(spotifyRequest, async (failedRequest: any) => {
-  const appName = process.env.APP_NAME;
-  const port = process.env.PORT || 5000;
-  const baseURL = `${process.env.NODE_ENV === 'production' ? `https://${appName}` : `http://localhost:${port}`}`;
+//   const appName = process.env.APP_NAME;
+//   const port = process.env.PORT || 5000;
+  const baseURL = `${process.env.NODE_ENV === 'production' ? `https://${global.appName}` : `http://localhost:${global.port}`}`;
 
   const { data } = await axios.get(`${baseURL}/spotify/refresh-token`);
   const { access_token: accessToken, token_type: tokenType } = data;

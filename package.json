@@ -1,10 +1,10 @@
 {
   "name": "learn-discord-js",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "A multi-purpose bot for all your server needs",
   "main": "./dist/index.js",
   "scripts": {
-    "dev": "nodemon -r dotenv/config ./src/index.ts",
+    "dev": "nodemon -r dotenv/config --files ./src/index.ts",
     "build": "npm run lint && tsc",
     "lint": "eslint ./src/**/*.{js,ts}",
     "start": "node -r dotenv/config ./dist/index.js"
