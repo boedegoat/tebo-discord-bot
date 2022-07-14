@@ -23,11 +23,15 @@ app.get('/invite', (req, res) => {
 // SPOTIFY ROUTES
 app.use('/spotify', spotifyRouter);
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+const runWebServer = () => {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 
-  // ping server every 5 minutes to prevent app asleep on heroku
-  setInterval(() => {
-    http.get(`http://${appName}`);
-  }, 5 * 60 * 1000); // 5 minutes
-});
+    // ping server every 5 minutes to prevent app asleep on heroku
+    setInterval(() => {
+      http.get(`http://${appName}`);
+    }, 5 * 60 * 1000); // 5 minutes
+  });
+};
+
+export default runWebServer;

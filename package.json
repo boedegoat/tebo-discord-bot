@@ -7,9 +7,7 @@
     "dev": "nodemon -r dotenv/config ./src/index.ts",
     "build": "npm run lint && tsc",
     "lint": "eslint ./src/**/*.{js,ts}",
-    "start": "node -r dotenv/config ./dist/index.js",
-    "dev-webserver": "nodemon -r dotenv/config ./src/server.ts",
-    "start-webserver": "node -r dotenv/config ./dist/server.js -p $PORT"
+    "start": "node -r dotenv/config ./dist/index.js"
   },
   "keywords": [
     "discord",

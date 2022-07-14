@@ -1,10 +1,8 @@
 import axios from 'axios';
 import createAuthRefreshInterceptor from 'axios-auth-refresh';
-import { readSpotifyToken } from '../routes/spotifyRouter';
 
-// TODO: try implement Authorization Code Flow
+// Spotify Authorization Code Flow
 // https://developer.spotify.com/documentation/general/guides/authorization/code-flow/
-// to fix search result in empty []
 
 const spotifyRequest = axios.create({
   baseURL: 'https://api.spotify.com/v1',
@@ -12,7 +10,11 @@ const spotifyRequest = axios.create({
 
 // Make interceptors (middleware)
 spotifyRequest.interceptors.request.use(async (request) => {
-  const { accessToken, tokenType } = await readSpotifyToken();
+  console.log('spotifyRequest middleware');
+  if (!global.spotifyToken) {
+    throw 'spotify token not exist';
+  }
+  const { accessToken, tokenType } = global.spotifyToken;
   // @ts-ignore
   request.headers.Authorization = `${tokenType} ${accessToken}`;
   return request;

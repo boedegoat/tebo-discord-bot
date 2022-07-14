@@ -1,6 +1,7 @@
 import { Client } from 'discord.js';
 import onInteraction from './events/onInteraction';
 import onReady from './events/onReady';
+import runWebServer from './server';
 
 // CLIENT -> bot / user
 // GUILD -> discord server
@@ -15,3 +16,5 @@ bot.on('ready', onReady);
 bot.on('interactionCreate', onInteraction);
 
 bot.login(process.env.TOKEN);
+
+runWebServer();

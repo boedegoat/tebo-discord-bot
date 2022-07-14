@@ -1,9 +1,8 @@
 import axios from 'axios';
 import express from 'express';
 import querystring from 'query-string';
-import fs from 'fs/promises';
-import path from 'path';
 import generateRandomString from '../lib/generateRandomString';
+import { setSpotifyToken } from '../lib/spotifyToken';
 
 const spotifyRouter = express.Router();
 const port = process.env.PORT || 5000;
@@ -11,24 +10,6 @@ const appName = `${process.env.APP_NAME}.herokuapp.com`;
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirectUri = `${process.env.NODE_ENV === 'production' ? `https://${appName}` : `http://localhost:${port}`}/spotify/callback`;
-
-const spotifyTokenPath = path.join(__dirname, '../../spotify-token.json');
-
-const writeSpotifyToken = async ({ data }: { data: any }) => {
-  await fs.writeFile(spotifyTokenPath, JSON.stringify({
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-    tokenType: data.token_type,
-  }, null, 2), 'utf-8');
-};
-
-export const readSpotifyToken = async () => {
-  try {
-    return JSON.parse(await fs.readFile(spotifyTokenPath, 'utf-8'));
-  } catch (err) {
-    console.log("Token file not exist. Make sure you've logged in to spotify");
-  }
-};
 
 spotifyRouter.get('/login', (req, res) => {
   const state = generateRandomString(16);
@@ -71,14 +52,17 @@ spotifyRouter.get('/callback', async (req, res) => {
     },
   );
 
-  await writeSpotifyToken({ data });
+  setSpotifyToken(data);
+  console.log(global.spotifyToken);
 
   res.send('success');
 });
 
 spotifyRouter.get('/refresh-token', async (req, res) => {
-  const spotifyToken = await readSpotifyToken();
-  const { refreshToken } = spotifyToken;
+  if (!global.spotifyToken) {
+    throw 'spotify token not exist';
+  }
+  const { refreshToken } = global.spotifyToken;
 
   const { data } = await axios.post(
     'https://accounts.spotify.com/api/token',
@@ -97,7 +81,7 @@ spotifyRouter.get('/refresh-token', async (req, res) => {
     },
   );
 
-  await writeSpotifyToken({ ...spotifyToken, accessToken: data.access_token });
+  setSpotifyToken({ ...global.spotifyToken, ...data });
 
   res.json(data);
 });
