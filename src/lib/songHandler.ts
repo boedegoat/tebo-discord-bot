@@ -1,14 +1,12 @@
-import { Playlist, Queue, Song } from 'discord-music-player';
+import { Queue, Song } from 'discord-music-player';
 import { Message, MessageEmbed } from 'discord.js';
 import createEmbed from './createEmbed';
-import spotifyRequest from './spotify';
+import spotifyRequest from './spotifyRequest';
 
 // eslint-disable-next-line no-unused-vars
 type SongHandler = (queue: Queue, song: Song) => Promise<void>
 // eslint-disable-next-line no-unused-vars
 type QueueHandler = (queue: Queue) => Promise<void>
-// eslint-disable-next-line no-unused-vars
-type PlaylistHandler = (queue: Queue, playlist: Playlist) => Promise<void>
 
 const reply = async (
   queue: Queue,
@@ -24,14 +22,13 @@ const reply = async (
 export const getSongRecomendations = async ({ song }: { song: Song }) => {
   try {
     // get track (song) data in spotify
-    const { data: trackData } = await spotifyRequest.get(`/search?q=${song.name}&type=track&limit=1`);
-    console.log(trackData);
+    const { data: trackData } = await spotifyRequest.get(`/search?q=${encodeURI(song.name)}&type=track&limit=1&offset=0`);
     // get trackId and artistId
     const { artists, id: trackId } = trackData.tracks.items[0];
     const { id: artistId } = artists[0];
 
     // get recomendations data by providing trackId and artistId
-    const { data: recomendationsData } = await spotifyRequest.get(`/recommendations?limit=5&seed_artists=${artistId}&${trackId}`);
+    const { data: recomendationsData } = await spotifyRequest.get(`/recommendations?limit=5&seed_artists=${artistId}&seed_tracks=${trackId}`);
 
     const { tracks } = recomendationsData;
 
@@ -41,8 +38,13 @@ export const getSongRecomendations = async ({ song }: { song: Song }) => {
       url: track.external_urls.spotify,
       author: track.artists[0].name,
     }));
-  } catch (err) {
-    console.log(err);
+  } catch (err:any) {
+    const errData = err.response?.data?.error;
+    if (errData?.message === 'No search query') {
+      console.log(`Song ${song.name} not found in spotify`);
+    } else {
+      console.log({ err, data: errData });
+    }
     return null;
   }
 };
@@ -75,10 +77,13 @@ export const onSongPlayed: SongHandler = async (queue, song) => {
 
   const similarSongsEmbed = createEmbed();
   similarSongsEmbed
-    .setAuthor({ name: `🎵 Similar songs to ${song.name}` })
-    .setDescription(songRecomendations
+    .setAuthor({
+      name: `Similar songs to ${song.name}`,
+      iconURL: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Spotify_icon.svg/1200px-Spotify_icon.svg.png',
+    })
+    .setDescription(`${songRecomendations
       .map((songRecomendation) => `- [${songRecomendation.name} - ${songRecomendation.author}](${songRecomendation.url})\n`)
-      .join(''));
+      .join('')}\nPowered by Spotify`);
 
   await queue.data.interaction.channel.send({
     embeds: [similarSongsEmbed],
