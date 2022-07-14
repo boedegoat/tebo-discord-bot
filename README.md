@@ -8,13 +8,6 @@ A multi-purpose bot for all your server needs 👍
 
 ## 🤖 Running bot in your local machine
 1. Open `.env.sample` to fill all the credentials needed, then rename it to `.env`
-
-    ```
-    TOKEN= # bot token
-    CLIENT_ID= # bot id
-    GUILD_ID= # dev server id
-    APP_NAME= # app name on heroku
-    ```
 2. Install all dependencies
 
     ```
