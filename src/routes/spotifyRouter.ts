@@ -53,8 +53,6 @@ spotifyRouter.get('/callback', async (req, res) => {
   );
 
   setSpotifyToken(data);
-  console.log(global.spotifyToken);
-
   res.send('success');
 });
 

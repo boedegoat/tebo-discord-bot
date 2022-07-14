@@ -1,3 +1,4 @@
+import 'express-async-errors';
 import express from 'express';
 import http from 'http';
 import spotifyRouter from './routes/spotifyRouter';
@@ -22,6 +23,13 @@ app.get('/invite', (req, res) => {
 
 // SPOTIFY ROUTES
 app.use('/spotify', spotifyRouter);
+
+// ERROR HANDLER
+// @ts-ignore
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  res.json({ err });
+});
 
 const runWebServer = () => {
   app.listen(port, () => {
