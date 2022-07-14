@@ -22,7 +22,13 @@ const writeSpotifyToken = async ({ data }: { data: any }) => {
   }, null, 2), 'utf-8');
 };
 
-export const readSpotifyToken = async () => JSON.parse(await fs.readFile(spotifyTokenPath, 'utf-8'));
+export const readSpotifyToken = async () => {
+  try {
+    return JSON.parse(await fs.readFile(spotifyTokenPath, 'utf-8'));
+  } catch (err) {
+    console.log("Token file not exist. Make sure you've logged in to spotify");
+  }
+};
 
 spotifyRouter.get('/login', (req, res) => {
   const state = generateRandomString(16);
