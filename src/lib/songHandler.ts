@@ -73,7 +73,7 @@ export const onSongPlayed: SongHandler = async (queue, song) => {
     ]));
 
   const songRecomendations = await getSongRecomendations({ song });
-  if (!songRecomendations) return;
+  if (!songRecomendations || songRecomendations.length === 0) return;
 
   const similarSongsEmbed = createEmbed();
   similarSongsEmbed
