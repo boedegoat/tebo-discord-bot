@@ -21,6 +21,7 @@ interface RunSantetProps {
 interface ResetSantetProps { userId: string }
 
 let santetQueue: SantetQueue = [];
+const creatorId = '485048406398468108';
 
 const resetSantet = ({ userId }: ResetSantetProps) => {
   santetQueue = santetQueue.filter(({ targetMember }) => targetMember.user.id !== userId);
@@ -70,7 +71,7 @@ const runSantet = async ({
   const embed = createEmbed();
   embed.setColor('RED');
   embed.setDescription(`Santeting ${targetMember.user.toString()} ${loop} times...`);
-  await interaction.editReply({ embeds: [embed] });
+  const message = await interaction.channel!.send({ embeds: [embed] });
 
   // execute santet loop
   santetQueue.push({ targetMember, senderMember });
@@ -83,12 +84,10 @@ const runSantet = async ({
 
   embed.setColor('GREEN');
   embed.setDescription(`Santet ${targetMember.user.toString()} ${loop} times done`);
-  interaction.editReply({ embeds: [embed] });
+  await message.edit({ embeds: [embed] });
 };
 
 const santet: Command = {
-  ephemeral: true,
-  useDeferReply: true,
 
   data: new SlashCommandBuilder()
     .setName('santet')
@@ -96,13 +95,16 @@ const santet: Command = {
     .addUserOption((option) => option
       .setName('target-user')
       .setDescription('Who do you want to santet ?'))
-    .addNumberOption((option) => option
+    .addIntegerOption((option) => option
       .setName('loop')
       .setDescription('How many times you want to santet him/her ?')
       .setMinValue(5))
     .addUserOption((option) => option
       .setName('stop-user')
-      .setDescription('Stop current ongoing santet by user')),
+      .setDescription('Stop current ongoing santet by user'))
+    .addBooleanOption((option) => option
+      .setName('massal')
+      .setDescription('Perform santet massal (select True to continue)')),
 
   run: async (interaction) => {
     const { options, guild } = interaction;
@@ -130,11 +132,11 @@ const santet: Command = {
 
       const embed = createEmbed();
       embed.setDescription(`Santet ${targetMember.user.toString()} stopped`);
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.channel!.send({ embeds: [embed] });
       return;
     }
 
-    const loop = options.getNumber('loop') ?? 20;
+    const loop = options.getInteger('loop') ?? 20;
     const targetUser = options.getUser('target-user');
     const senderMember = getGuildMember({ guild, userId: senderUser.id });
 
@@ -145,7 +147,7 @@ const santet: Command = {
       }
 
       // check if targeted user is bot creator
-      if (targetUser.id === '485048406398468108') {
+      if (targetUser.id === creatorId) {
         throw "You can't santet my creator";
       }
 
@@ -157,11 +159,11 @@ const santet: Command = {
       return;
     }
 
-    // if target-user is not specified, perform random santet to user inside voice channel
+    // if target-user is not specified, perform the rest
 
     const senderCurrentVoiceChannelId = senderMember.voice.channelId;
     if (!senderCurrentVoiceChannelId) {
-      throw 'If you are not specify target-user, please join to voice channel so I can santet random people there';
+      throw 'If you are not specify target-user, please join to voice channel so I can santet to people there';
     }
 
     const voiceChannel = getGuildChannel({
@@ -171,14 +173,30 @@ const santet: Command = {
 
     const voiceChannelMembers = voiceChannel?.members as Collection<string, GuildMember>;
 
+    const botMember = getGuildMember({ guild, userId: bot.user!.id });
     const voiceChannelMembersArray = [...voiceChannelMembers]
       .map(([, data]) => data)
       .filter((member) => !member.user.bot
-        && member.user.id !== process.env.CREATOR_ID
-        && !(member.user.id in santetQueue));
+        && member.user.id !== creatorId
+        && !santetQueue.find((data) => data.targetMember.user.id === member.user.id)
+        && member.roles.highest.position < botMember.roles.highest.position);
 
     if (voiceChannelMembersArray.length === 0) {
       throw 'There is no users who I can santet here\nOr you can use /santet <target-user> instead';
+    }
+
+    const santetMassal = options.getBoolean('massal');
+
+    if (santetMassal) {
+      // santet all people
+      Promise.all(voiceChannelMembersArray
+        .map((member) => runSantet({
+          interaction,
+          loop,
+          targetMember: member,
+          senderMember,
+        })));
+      return;
     }
 
     const randomMember = voiceChannelMembersArray[
