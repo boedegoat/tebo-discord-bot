@@ -1,18 +1,19 @@
-import { Guild } from 'discord.js';
+import { Guild, GuildMember, UserResolvable } from 'discord.js';
 
 interface Props {
     guild?: Guild | null
-    userId?: string
+    user?: UserResolvable
 }
 
-const getGuildMember = ({ guild, userId }: Props) => {
-  const member = guild?.members.cache.get(userId ?? '');
+const getGuildMember = async ({ guild, user }: Props) => {
+  const member = await guild?.members.fetch({ user, force: true, limit: 1 });
 
   if (!member) {
-    throw 'User not found for unknown reason';
+    throw 'User not found. Make sure you are inside a discord server.';
   }
 
-  return member;
+  // @ts-ignore
+  return member as GuildMember;
 };
 
 export default getGuildMember;

@@ -5,8 +5,8 @@ interface Props {
     channelId: string
 }
 
-const getGuildChannel = ({ guild, channelId }: Props) => {
-  const channel = guild?.channels.cache.get(channelId);
+const getGuildChannel = async ({ guild, channelId }: Props) => {
+  const channel = await guild?.channels.fetch(channelId, { force: true });
 
   if (!channel) {
     throw 'Channel not found for unknown reason';

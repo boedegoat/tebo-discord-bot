@@ -83,7 +83,7 @@ const runSantet = async ({
   }
 
   // check if bot has 'Manage Role' permission
-  const botMember = getGuildMember({ guild: interaction.guild, userId: bot.user?.id });
+  const botMember = await getGuildMember({ guild: interaction.guild, user: bot.user! });
   if (!botMember.permissions.has('MANAGE_ROLES')) {
     throw "Please make sure I have 'Manage Role' permission";
   }
@@ -174,7 +174,7 @@ const santet: Command = {
 
     const loop = options.getInteger('loop') ?? 20;
     const targetUser = options.getUser('target-user');
-    const senderMember = getGuildMember({ guild, userId: senderUser.id });
+    const senderMember = await getGuildMember({ guild, user: senderUser });
 
     // if sender specify target-user
     if (targetUser) {
@@ -187,7 +187,7 @@ const santet: Command = {
         throw "You can't santet my creator";
       }
 
-      const targetMember = getGuildMember({ guild, userId: targetUser.id });
+      const targetMember = await getGuildMember({ guild, user: targetUser });
 
       await runSantet({
         interaction, loop, targetMember, senderMember,
@@ -202,14 +202,14 @@ const santet: Command = {
       throw 'If you are not specify target-user, please join to voice channel so I can santet to people there';
     }
 
-    const voiceChannel = getGuildChannel({
+    const voiceChannel = await getGuildChannel({
       guild,
       channelId: senderCurrentVoiceChannelId,
     });
 
     const voiceChannelMembers = voiceChannel?.members as Collection<string, GuildMember>;
 
-    const botMember = getGuildMember({ guild, userId: bot.user!.id });
+    const botMember = await getGuildMember({ guild, user: bot.user! });
     let voiceChannelMembersArray = [...voiceChannelMembers]
       .map(([, data]) => data)
       .filter((member) => !member.user.bot
@@ -237,6 +237,10 @@ const santet: Command = {
 
     voiceChannelMembersArray = voiceChannelMembersArray.filter((
       (member) => member.roles.cache.size > 1));
+
+    if (voiceChannelMembersArray.length === 0) {
+      throw 'Please add at least one role to all voice channel members';
+    }
 
     const randomMember = voiceChannelMembersArray[
       Math.floor(Math.random() * voiceChannelMembersArray.length)
