@@ -11,19 +11,33 @@ import { bot } from '..';
 type SantetQueue = {
     targetMember: GuildMember
     senderMember: GuildMember
-}[]
+    progress: string
+    running: boolean
+}
 interface RunSantetProps {
     interaction: CommandInteraction
     loop: number
     targetMember: GuildMember
     senderMember: GuildMember
 }
-interface ResetSantetProps { userId: string }
 
-let santetQueue: SantetQueue = [];
+let santetQueue: SantetQueue[] = [];
 const creatorId = '485048406398468108';
 
-const resetSantet = ({ userId }: ResetSantetProps) => {
+const editSantet = ({ userId, newData }: { userId: string, newData: any}) => {
+  try {
+    const index = santetQueue.findIndex((data) => data.targetMember.user.id === userId);
+    santetQueue = [
+      ...santetQueue.slice(0, index),
+      { ...santetQueue[index], ...newData },
+      ...santetQueue.slice(index + 1),
+    ];
+  } catch (err) {
+    //
+  }
+};
+
+const resetSantet = ({ userId }: { userId: string }) => {
   santetQueue = santetQueue.filter(({ targetMember }) => targetMember.user.id !== userId);
 };
 
@@ -31,14 +45,29 @@ const runSantet = async ({
   interaction, loop, targetMember, senderMember,
 }: RunSantetProps) => {
   // check if targetMember user id is in santetQueue
-  if (santetQueue.find((data) => data.targetMember.user.id === targetMember.user.id)) {
-    throw 'You can\'t perform santet on a user who is being santet';
+  const santetExist = santetQueue.find(
+    (data) => data.targetMember.user.id === targetMember.user.id,
+  );
+  if (santetExist) {
+    const embed = createEmbed();
+    embed.setDescription(`Santeting ${targetMember.user}: ${santetExist.progress}`);
+    await interaction.reply({ embeds: [embed] });
+    return;
   }
 
   const targetMemberRoles = targetMember.roles.cache;
 
+  console.log({
+    user: targetMember.user.username,
+    roleSize: targetMemberRoles.size,
+    roles: targetMemberRoles,
+  });
+
   if (targetMemberRoles.size === 1) {
-    throw `Please add at least one role to ${targetMember.user.toString()}`;
+    const errEmbed = createEmbed('error');
+    errEmbed.setDescription(`Please add at least one role to ${targetMember.user.toString()}`);
+    await interaction.channel!.send({ embeds: [errEmbed] });
+    return;
   }
 
   const targetMemberRolesArray = [...targetMemberRoles].map(([, roleData]) => roleData);
@@ -74,11 +103,20 @@ const runSantet = async ({
   const message = await interaction.channel!.send({ embeds: [embed] });
 
   // execute santet loop
-  santetQueue.push({ targetMember, senderMember });
-  for (let times = 1; times <= Math.round(loop / 2); times += 1) {
-    if (!santetQueue.find((data) => data.targetMember === targetMember)) break;
+  santetQueue.push({
+    targetMember, senderMember, progress: `0/${loop}`, running: true,
+  });
+
+  for (let times = 1; times <= Math.round(loop); times += 2) {
+    // console.log(santetQueue);
+    if (santetQueue.find(
+      (data) => data.targetMember.user.id === targetMember.user.id,
+    )?.running === false) break;
+
     await targetMember.roles.remove(targetMemberRoles);
+    editSantet({ userId: targetMember.user.id, newData: { progress: `${times}/${loop}` } });
     await targetMember.roles.add(roleToAddBack);
+    editSantet({ userId: targetMember.user.id, newData: { progress: `${times + 1}/${loop}` } });
   }
   resetSantet({ userId: targetMember.user.id });
 
@@ -128,7 +166,7 @@ const santet: Command = {
       }
 
       const { targetMember } = santetData;
-      resetSantet({ userId: targetMember.user.id });
+      editSantet({ userId: targetMember.user.id, newData: { running: false } });
 
       const embed = createEmbed();
       embed.setDescription(`Santet ${targetMember.user.toString()} stopped`);
@@ -174,7 +212,7 @@ const santet: Command = {
     const voiceChannelMembers = voiceChannel?.members as Collection<string, GuildMember>;
 
     const botMember = getGuildMember({ guild, userId: bot.user!.id });
-    const voiceChannelMembersArray = [...voiceChannelMembers]
+    let voiceChannelMembersArray = [...voiceChannelMembers]
       .map(([, data]) => data)
       .filter((member) => !member.user.bot
         && member.user.id !== creatorId
@@ -189,7 +227,7 @@ const santet: Command = {
 
     if (santetMassal) {
       // santet all people
-      Promise.all(voiceChannelMembersArray
+      await Promise.all(voiceChannelMembersArray
         .map((member) => runSantet({
           interaction,
           loop,
@@ -198,6 +236,9 @@ const santet: Command = {
         })));
       return;
     }
+
+    voiceChannelMembersArray = voiceChannelMembersArray.filter((
+      (member) => member.roles.cache.size > 1));
 
     const randomMember = voiceChannelMembersArray[
       Math.floor(Math.random() * voiceChannelMembersArray.length)
