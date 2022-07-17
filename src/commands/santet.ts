@@ -57,16 +57,12 @@ const runSantet = async ({
 
   const targetMemberRoles = targetMember.roles.cache;
 
-  console.log({
-    user: targetMember.user.username,
-    roleSize: targetMemberRoles.size,
-    roles: targetMemberRoles,
-  });
-
   if (targetMemberRoles.size === 1) {
     const errEmbed = createEmbed('error');
     errEmbed.setDescription(`Please add at least one role to ${targetMember.user.toString()}`);
-    await interaction.channel!.send({ embeds: [errEmbed] });
+    await interaction.reply({ embeds: [errEmbed] }).catch(
+      () => interaction.followUp({ embeds: [errEmbed] }),
+    );
     return;
   }
 
@@ -100,7 +96,9 @@ const runSantet = async ({
   const embed = createEmbed();
   embed.setColor('RED');
   embed.setDescription(`Santeting ${targetMember.user.toString()} ${loop} times...`);
-  const message = await interaction.channel!.send({ embeds: [embed] });
+  await interaction.reply({ embeds: [embed] }).catch(
+    () => interaction.followUp({ embeds: [embed] }),
+  );
 
   // execute santet loop
   santetQueue.push({
@@ -122,7 +120,7 @@ const runSantet = async ({
 
   embed.setColor('GREEN');
   embed.setDescription(`Santet ${targetMember.user.toString()} ${loop} times done`);
-  await message.edit({ embeds: [embed] });
+  await interaction.followUp({ embeds: [embed] });
 };
 
 const santet: Command = {
@@ -170,7 +168,7 @@ const santet: Command = {
 
       const embed = createEmbed();
       embed.setDescription(`Santet ${targetMember.user.toString()} stopped`);
-      await interaction.channel!.send({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed] });
       return;
     }
 
