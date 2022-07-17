@@ -1,5 +1,5 @@
 {
-    "name": "learn-discord-js",
+    "name": "tebo-discord-bot",
     "version": "1.8.5",
     "description": "A multi-purpose bot for all your server needs",
     "main": "./dist/index.js",
