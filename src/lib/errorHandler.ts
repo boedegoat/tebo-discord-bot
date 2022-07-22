@@ -22,7 +22,7 @@ const errorHandler = ({ err, interaction }: any) => {
   embed.setDescription(errMsg);
 
   interaction.editReply({ embeds: [embed] }).catch(() => {
-    interaction.reply({ embeds: [embed] });
+    interaction.followUp({ embeds: [embed] });
   });
 };
 
