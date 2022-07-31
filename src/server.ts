@@ -1,6 +1,5 @@
 import 'express-async-errors';
 import express from 'express';
-import http from 'http';
 import spotifyRouter from './routes/spotifyRouter';
 import { getAppName, getPort } from './lib/utils';
 
@@ -35,11 +34,6 @@ app.use((err, req, res, next) => {
 const runWebServer = () => {
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
-
-    // ping server every 5 minutes to prevent app asleep on heroku
-    setInterval(() => {
-      http.get(`http://${appName}`);
-    }, 5 * 60 * 1000); // 5 minutes
   });
 };
 
