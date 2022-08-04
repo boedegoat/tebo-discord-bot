@@ -35,6 +35,8 @@ const onReady = async (bot: Client) => {
   if (process.env.NODE_ENV === 'production') {
     await rest.put(Routes.applicationCommands(clientId), {
       body: commandData,
+    }).catch((err) => {
+      console.log(err);
     });
   }
 
