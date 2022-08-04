@@ -4,7 +4,7 @@ A multi-purpose bot for all your server needs 👍
 - **⚡ Easy and simple to use**, use modern `/` (slash) commands to interact
 - **🎉 Bring more fun to your server**, need music, interact with AI, or wanna troll your friends ? this is the right bot
 
-[Add to your server](https://tebo-discord-bot.herokuapp.com/invite)
+[Add to your server](https://tebobot.herokuapp.com/invite)
 
 ## 🤖 Running bot in your local machine
 1. Open `.env.sample` to fill all the credentials needed, then rename it to `.env`
