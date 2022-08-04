@@ -31,7 +31,7 @@ const draw: Command = {
     await interaction.reply({ embeds: [drawEmbed] });
 
     const startTime = Date.now();
-    const { data } = await axios.post('https://bf.dallemini.ai/generate', {
+    const { data } = await axios.post('https://backend.craiyon.com/generate', {
       prompt: text,
     });
     const finishTime = Math.round((Date.now() - startTime) / 1000); // second
