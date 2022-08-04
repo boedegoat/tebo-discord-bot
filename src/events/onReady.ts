@@ -32,17 +32,17 @@ const onReady = async (bot: Client) => {
       body: commandData,
     });
 
+    console.log(`✅ ${commands.length} Commands registered`);
+
+    console.log('⚡ Bot Ready');
+    console.log(`🟢 Logged in as ${bot.user?.tag}`);
+
     // register global commands (aprox 1 hour to register)
     if (process.env.NODE_ENV === 'production') {
       await rest.put(Routes.applicationCommands(clientId), {
         body: commandData,
       });
     }
-
-    console.log(`✅ ${commands.length} Commands registered`);
-
-    console.log('⚡ Bot Ready');
-    console.log(`🟢 Logged in as ${bot.user?.tag}`);
   } catch (err) {
     console.log(err);
   }
